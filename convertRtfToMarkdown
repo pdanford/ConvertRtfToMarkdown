@@ -33,12 +33,13 @@ function convert-rtf-to-md() {
         | /usr/bin/textutil -convert html -stdin -stdout  -prefixspaces 4 \
                             -strip -excludedelements "(p,a)"              \
         | { pandoc -f html -t markdown_strict --wrap=none ; echo -en "\n" ; } \
-        | /usr/bin/sed -E                                                     \
-                       -e  's/(<span)([^>]*>)([^<]*)(<\/span>)/\3/g'          \
-                       -e  's/&lt;/</g'                                       \
-                       -e  's/&gt;/>/g'                                       \
-                       -e  's/(^[0-9]+)\)/\1./g'                              \
-                       -e  's/ / /g'                                          \
+        | /usr/bin/sed -E                                           \
+                       -e 's/(<span)([^>]*>)([^<]*)(<\/span>)/\3/g' \
+                       -e 's/&lt;/</g'                              \
+                       -e 's/&gt;/>/g'                              \
+                       -e 's/(^[0-9]+)\)/\1./g'                     \
+                       -e 's/ / /g'                                 \
+                       -e 's/^[[:space:]]+$//'                      \
                        > "${DEST_FILE}"
                        # 1. See README.md for explanation of regex.
                        # 2. Note the shell grouping construct {} around pandoc

@@ -35,6 +35,7 @@ textutil and pandoc aren't quite enough to do a complete conversion of rtf to ma
     's/&gt;/>/g'                              -> convert html escaped greater than to actual character
     's/(^[0-9]+)\)/\1./g'                     -> convert any numbered lists that use #) to markdown's dotted syntax #.
     's/ / /g'                                 -> convert any UTF8 non-breaking space to regular space (see note 2 below)
+    's/^[[:space:]]+$//'                      -> collapse lines with only spaces to nl
 
 #### --codenotes stage sed pattern explanations
 
