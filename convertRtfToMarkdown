@@ -30,37 +30,38 @@ function convert-rtf-to-md() {
     SRCFILENAME="${1##*/}"
     DEST_FILE="${2}/${SRCFILENAME/.rtf/.md}"
     cat "${1}" \
-        | /usr/bin/textutil -convert html -stdin -stdout  -prefixspaces 4 \
-                            -strip -excludedelements "(p,a)"              \
-        | { pandoc -f html -t markdown_strict --wrap=none ; echo -en "\n" ; } \
-        | /usr/bin/sed -E                                           \
-                       -e 's/(<span)([^>]*>)([^<]*)(<\/span>)/\3/g' \
-                       -e 's/&lt;/</g'                              \
-                       -e 's/&gt;/>/g'                              \
-                       -e 's/(^[0-9]+)\)/\1./g'                     \
-                       -e 's/ / /g'                                 \
-                       -e 's/^[[:space:]]+$//'                      \
-                       > "${DEST_FILE}"
-                       # 1. See README.md for explanation of regex.
-                       # 2. Note the shell grouping construct {} around pandoc
-                       #    is to append a \n to the stream to make sure it's 
-                       #    properly terminated for the seds that follow.
+    | /usr/bin/textutil -convert html -stdin -stdout  -prefixspaces 4 \
+                        -strip -excludedelements "(p,a)"              \
+    | { pandoc -f html -t markdown_strict --wrap=none ; echo -en "\n" ; } \
+    | /usr/bin/sed -E                                           \
+                   -e 's/(<span)([^>]*>)([^<]*)(<\/span>)/\3/g' \
+                   -e 's/&lt;/</g'                              \
+                   -e 's/&gt;/>/g'                              \
+                   -e 's/(^[0-9]+)\)/\1./g'                     \
+                   -e 's/ / /g'                                 \
+                   -e 's/^[[:blank:]]+$//'                      \
+                   > "${DEST_FILE}"
+                   # 1. See README.md for explanation of regex.
+                   # 2. Note the shell grouping construct {} around pandoc
+                   #    is to append a \n to the stream to make sure it's 
+                   #    properly terminated for the seds that follow.
 
     # do additional sed manipulation of plain md -> code notes md sed
     # manipulation also if 3rd arg exists
     if [[ ${3:+x} ]]; then
-        # this separated because it must be done before because the D will keep
-        # the other regex substitutions from running
+        # this is separated because it must be done before the other regexes
+        # because the D command will keep them from running (and this one must
+        # be ran before the remaining regexes).
         /usr/bin/sed -E -i ""                                                                    \
-                     -e 'N;s/(^[[:space:]]*[^* ].*)(\n)([[:space:]]*\*\*)/\1\2\2\3/;t' -e 'P;D;' \
+                     -e 'N;s/(^[[:blank:]]*[^* ].*)(\n)([[:blank:]]*\*\*)/\1\2\2\3/;t' -e 'P;D;' \
                      "${DEST_FILE}"
  
         /usr/bin/sed -E -i ""                                               \
-                     -e 's/(^[[:space:]]*)(\*\*)(.*)(\*\*)(.*)/    \1\3\5/' \
+                     -e 's/(^[[:blank:]]*)(\*\*)(.*)(\*\*)(.*)/    \1\3\5/' \
                      -e 's/(\*\*)([^*]+)(\*\*)/`\2`/g'                      \
                      -e 's/(\*\*)([^*`])(.*)(\*\*)/`\2\3`/g'                \
                      -e 's/(\\)([]\`*_#[])/\2/g'                            \
-                     -e 's/`([[:space:]]+)`/\1/g'                           \
+                     -e 's/`([[:blank:]]+)`/\1/g'                           \
                      "${DEST_FILE}"
                      # see README.md for explanation of regex
     fi
